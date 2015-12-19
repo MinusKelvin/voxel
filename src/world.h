@@ -36,7 +36,7 @@ typedef struct Chunk {
 } Chunk;
 
 typedef struct World {
-	Chunk chunks[16][16][16];
+	Chunk chunks[64][16][64];
 	Player player;
 	SimplexInstance *simplex[2];
 } World;
@@ -58,6 +58,6 @@ void tickPlayer(World *world, Context *context);
 const BlockData *getBlockDataOf(World *world, int x, int y, int z);
 
 void renderWorld(World *world, Context *context);
-void updateChunkVBO(Chunk *chunk);
+void updateChunkVBO(World *world, Chunk *chunk);
 
 #endif

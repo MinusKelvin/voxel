@@ -29,9 +29,9 @@ void renderWorld(World *world, Context *context) {
 	glUniformMatrix4fv(context->shaders->basicProjLoc, 1, GL_FALSE, (GLfloat*) &transform);
 
 	int i, j, k;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 64; i++)
 		for (j = 0; j < 16; j++)
-			for (k = 0; k < 16; k++)
+			for (k = 0; k < 64; k++)
 				renderChunk(&world->chunks[i][j][k]);
 }
 
@@ -42,7 +42,7 @@ static void buildSouthFace(float *mem, int *size, int *verts, float x, float y, 
 static void buildTopFace(float *mem, int *size, int *verts, float x, float y, float z, float id);
 static void buildBottomFace(float *mem, int *size, int *verts, float x, float y, float z, float id);
 
-void updateChunkVBO(Chunk *chunk) {
+void updateChunkVBO(World *world, Chunk *chunk) {
 	glBindBuffer(GL_ARRAY_BUFFER, chunk->vbo);
 	float *mem = malloc(16*16*16*48*3*4);
 	int size = 0;
@@ -54,22 +54,28 @@ void updateChunkVBO(Chunk *chunk) {
 			for (k = 0; k < 16; k++) {
 				Block *block = &chunk->blocks[i][j][k];
 				if (!blockdata[block->id].isTransparent) {
-					if (k == 0 || blockdata[chunk->blocks[i][j][k-1].id].isTransparent)
+					const BlockData *bd = getBlockDataOf(world, i+chunk->x, j+chunk->y, k+chunk->z-1);
+					if (bd != NULL && bd->isTransparent)
 						buildNorthFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].southTextureID);
 
-					if (k == 15 || blockdata[chunk->blocks[i][j][k+1].id].isTransparent)
+					bd = getBlockDataOf(world, i+chunk->x, j+chunk->y, k+chunk->z+1);
+					if (bd != NULL && bd->isTransparent)
 						buildSouthFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].northTextureID);
 
-					if (i == 0 || blockdata[chunk->blocks[i-1][j][k].id].isTransparent)
+					bd = getBlockDataOf(world, i+chunk->x-1, j+chunk->y, k+chunk->z);
+					if (bd != NULL && bd->isTransparent)
 						buildWestFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].westTextureID);
 
-					if (i == 15 || blockdata[chunk->blocks[i+1][j][k].id].isTransparent)
+					bd = getBlockDataOf(world, i+chunk->x+1, j+chunk->y, k+chunk->z);
+					if (bd != NULL && bd->isTransparent)
 						buildEastFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].eastTextureID);
 
-					if (j == 0 || blockdata[chunk->blocks[i][j-1][k].id].isTransparent)
+					bd = getBlockDataOf(world, i+chunk->x, j+chunk->y-1, k+chunk->z);
+					if (bd != NULL && bd->isTransparent)
 						buildBottomFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].bottomTextureID);
 
-					if (j == 15 || blockdata[chunk->blocks[i][j+1][k].id].isTransparent)
+					bd = getBlockDataOf(world, i+chunk->x, j+chunk->y+1, k+chunk->z);
+					if (bd != NULL && bd->isTransparent)
 						buildTopFace(mem, &size, &chunk->verts, i+chunk->x, j+chunk->y, k+chunk->z, blockdata[block->id].topTextureID);
 				}
 			}

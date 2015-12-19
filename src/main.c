@@ -10,13 +10,13 @@
 #include "math/mat4.h"
 
 static float clearColor[] = {
-	0.125f, 0.125f, 0.125f, 1.0f,
+	0.1, 0.125, 1, 1.0,
 };
 
 void fbosize(GLFWwindow *win, int w, int h) {
 	glViewport(0, 0, w, h);
 	Context *context = glfwGetWindowUserPointer(win);
-	mat4Perspective(PI/2, (float) w / h, 0.1, 512.0, &context->perspective);
+	mat4Perspective(PI/2, (float) w / h, 0.1, 1512.0, &context->perspective);
 	char title[25];
 	snprintf(title, 25, "Voxel: %i x %i", w, h);
 	glfwSetWindowTitle(win, title);
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	context.isGrabbed = 1;
 	context.window = window;
 	glfwSetWindowUserPointer(window, &context);
-//	glfwSwapInterval(0);
+	//glfwSwapInterval(0);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPos(window, 0, 0);
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 	glUseProgram(context.shaders->basic);
 	context.textures = loadTextures();
 
-	mat4Perspective(PI/2, 16/9.0, 0.1, 512, &context.perspective);
+	mat4Perspective(PI/2, 16/9.0, 0.1, 1512, &context.perspective);
 
 	World *world = createWorld();
 	context.yaw = &world->player.yaw;
@@ -110,6 +110,7 @@ int main(int argc, char **argv) {
 		double t = glfwGetTime();
 		if (context.isGrabbed) {
 			tickWorld(world, &context);
+			printf("x: %f, y: %f, z: %f\n", world->player.x, world->player.y, world->player.z);
 		}
 
 		glClearBufferfv(GL_COLOR, 0, clearColor);
@@ -119,7 +120,6 @@ int main(int argc, char **argv) {
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-//		printf("%f\n", glfwGetTime() - t);
-		printf("x: %f, y: %f, z: %f\n", world->player.x, world->player.y, world->player.z);
+		//printf("%f\n", glfwGetTime() - t);
 	} while (glfwWindowShouldClose(window) == 0);
 }
