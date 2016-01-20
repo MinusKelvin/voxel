@@ -167,3 +167,43 @@ Mat4 *mat4Translate(Mat4 *left, float x, float y, float z, Mat4 *dest) {
 	dest->m33 = left->m03 * x + left->m13 * y + left->m23 * z + left->m33;
 	return dest;
 }
+
+Mat4 *mat4LookAlong(float dirX, float dirY, float dirZ, float upX, float upY, float upZ, Mat4 *dest) {
+	float invDirLength = 1.0f / sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+	float dirnX = dirX * invDirLength;
+	float dirnY = dirY * invDirLength;
+	float dirnZ = dirZ * invDirLength;
+	// right = direction x up
+	float rightX, rightY, rightZ;
+	rightX = dirnY * upZ - dirnZ * upY;
+	rightY = dirnZ * upX - dirnX * upZ;
+	rightZ = dirnX * upY - dirnY * upX;
+	// normalize right
+	float invRightLength = 1.0f / sqrt(rightX * rightX + rightY * rightY + rightZ * rightZ);
+	rightX *= invRightLength;
+	rightY *= invRightLength;
+	rightZ *= invRightLength;
+	// up = right x direction
+	float upnX = rightY * dirnZ - rightZ * dirnY;
+	float upnY = rightZ * dirnX - rightX * dirnZ;
+	float upnZ = rightX * dirnY - rightY * dirnX;
+
+	dest->m00 = rightX;
+	dest->m01 = upnX;
+	dest->m02 = -dirnX;
+	dest->m03 = 0.0f;
+	dest->m10 = rightY;
+	dest->m11 = upnY;
+	dest->m12 = -dirnY;
+	dest->m13 = 0.0f;
+	dest->m20 = rightZ;
+	dest->m21 = upnZ;
+	dest->m22 = -dirnZ;
+	dest->m23 = 0.0f;
+	dest->m30 = 0.0f;
+	dest->m31 = 0.0f;
+	dest->m32 = 0.0f;
+	dest->m33 = 1.0f;
+
+	return dest;
+}

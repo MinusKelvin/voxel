@@ -1,22 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-#define GLEW_NO_GLU
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "world.h"
 
 #include "glstuff.h"
-#include "world.h"
 #include "math/mat4.h"
 
 static float clearColor[] = {
 	0.1, 0.125, 1, 1.0,
 };
 
+int max(int a, int b) {
+	return a > b ? a : b;
+}
+
+int min(int a, int b) {
+	return a < b ? a : b;
+}
+
 void fbosize(GLFWwindow *win, int w, int h) {
 	glViewport(0, 0, w, h);
 	Context *context = glfwGetWindowUserPointer(win);
 	mat4Perspective(PI/2, (float) w / h, 0.1, 1512.0, &context->perspective);
+	context->width = w;
+	context->height = h;
 	char title[25];
 	snprintf(title, 25, "Voxel: %i x %i", w, h);
 	glfwSetWindowTitle(win, title);
@@ -72,8 +80,13 @@ int main(int argc, char **argv) {
 	static Context context;
 	context.isGrabbed = 1;
 	context.window = window;
+	context.width = 1280;
+	context.height = 720;
+	context.suny = 0.440225;
+	context.sunx = 0.880451;
+	context.sunz = 0.17609;
 	glfwSetWindowUserPointer(window, &context);
-	//glfwSwapInterval(0);
+	glfwSwapInterval(0);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPos(window, 0, 0);
@@ -82,7 +95,9 @@ int main(int argc, char **argv) {
 	glfwSetKeyCallback(window, &keyCallback);
 	glfwSetCursorPosCallback(window, &mousePos);
 
-	int vao;
+	glGetError(); // Clear error left behind from glewInit
+
+	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
@@ -104,22 +119,36 @@ int main(int argc, char **argv) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+
 	float depthClear = 1;
-	float x = 0, y = 0, z = 0;
+	float v = 0;
 	do {
 		double t = glfwGetTime();
 		if (context.isGrabbed) {
+			v += 0.001;
+			context.sunz = 0.5;
+			context.suny = cos(v);
+			context.sunz = sin(v);
+			float len = sqrt(context.sunz * context.sunz + context.suny * context.suny + context.sunx * context.sunx);
+			context.sunz /= len;
+			context.suny /= len;
+			context.sunx /= len;
 			tickWorld(world, &context);
 			printf("x: %f, y: %f, z: %f\n", world->player.x, world->player.y, world->player.z);
 		}
 
 		glClearBufferfv(GL_COLOR, 0, clearColor);
 		glClearBufferfv(GL_DEPTH, 0, &depthClear);
+		glBindFramebuffer(GL_FRAMEBUFFER, context.textures->fbo);
+		float zero = 0;
+		glClearBufferfv(GL_DEPTH, 0, &zero);
 
 		renderWorld(world, &context);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		//printf("%f\n", glfwGetTime() - t);
+		printf("%f\n", glfwGetTime() - t);
+		//printf("%x\n", glGetError());
 	} while (glfwWindowShouldClose(window) == 0);
+	return 0;
 }

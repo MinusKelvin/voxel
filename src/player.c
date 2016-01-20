@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <GLFW/glfw3.h>
-
 #include "world.h"
 
 static int collide(World *world) {
@@ -100,8 +98,8 @@ void tickPlayer(World *world, Context *context) {
 		world->player.xvel -= cos(world->player.yaw) * 0.05;
 		world->player.zvel -= sin(world->player.yaw) * 0.05;
 	}
-	if (/**/onGround &&/**/ glfwGetKey(context->window, GLFW_KEY_SPACE)) {
-		world->player.yvel /*+= 0.05;/*/= 0.2;
+	if (onGround && glfwGetKey(context->window, GLFW_KEY_SPACE)) {
+		world->player.yvel = 0.2;
 	}
 //	if (glfwGetKey(context->window, GLFW_KEY_LEFT_SHIFT))
 //		world->player.yvel -= 0.05;

@@ -26,6 +26,7 @@ Mat4 *mat4Mul(Mat4 *left, Mat4 *right, Mat4 *dest);
 Mat4 *mat4Rotate(Mat4 *left, float angle, float x, float y, float z, Mat4 *dest);
 Mat4 *mat4Perspective(float fovy, float aspect, float near, float far, Mat4 *dest);
 Mat4 *mat4Translate(Mat4 *left, float x, float y, float z, Mat4 *dest);
+Mat4 *mat4LookAlong(float dirX, float dirY, float dirZ, float upX, float upY, float upZ, Mat4 *dest);
 
 #endif
 
